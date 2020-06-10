@@ -59,7 +59,24 @@ func main() {
         os.Exit(1)
     }
 
+  
+    var arn = ""
     for _, t := range resultT.Topics {
         fmt.Println(*t.TopicArn)
+        arn = *t.TopicArn
     }
+
+    //publish test message
+    input := &sns.PublishInput{
+        Message:  aws.String("Hello world!"),
+        TopicArn: aws.String(arn),
+    }
+
+    result, err := svc.Publish(input)
+    if err != nil {
+        fmt.Println("Publish error:", err)
+        return
+    }
+
+    fmt.Println(result)
 }
