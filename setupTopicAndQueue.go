@@ -4,7 +4,7 @@ import (
     "github.com/aws/aws-sdk-go/aws"
     "github.com/aws/aws-sdk-go/service/sns"
     "github.com/aws/aws-sdk-go/service/sqs"
-    "goutilities.com/snsutil/utility"
+    "goutilities.com/awsutil/utility"
 
     "fmt"
 )
@@ -17,7 +17,7 @@ func main() {
     protocolName := "sqs"
 
     //Get a session for interfacing with AWS
-    sess := utility.GetSession()
+    sess := utility.GetSession("tapestry")
 
     // Create an SQS and SNS service client.
     snsSvc := sns.New(sess)
@@ -61,6 +61,10 @@ func main() {
 
     // No way to retrieve the queue ARN through the SDK, manual string replace to generate the ARN
     queueARN := utility.ConvertQueueURLToARN(queueURL)
+
+    fmt.Println("Topic URN", topicArn)
+    fmt.Println("Protocol Name", protocolName)
+    fmt.Println("Queue ARN", queueARN)
 
     if topicArn != "" {
         subscribeQueueInput := sns.SubscribeInput{

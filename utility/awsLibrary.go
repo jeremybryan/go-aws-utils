@@ -14,7 +14,7 @@ import (
     "os"
 )
 
-func GetSession() *session.Session {
+func GetSession(profile string) *session.Session {
     // Initialize a session that the SDK will use to load
     // credentials from the shared credentials file. (~/.aws/credentials).
     sess := session.Must(
@@ -26,9 +26,10 @@ func GetSession() *session.Session {
             // the shared credentials file.
             Credentials: credentials.NewCredentials(&credentials.SharedCredentialsProvider{
                 Filename: defaults.SharedCredentialsFilename(),
-                Profile:  "default",
+                Profile:  profile,
             }),
-            Region: aws.String(endpoints.UsEast1RegionID),
+            //Region: aws.String(endpoints.UsEast1RegionID),
+            Region: aws.String(endpoints.UsGovWest1RegionID),
         }),
     )
 
@@ -101,7 +102,9 @@ func SendTestMessage(message, arn string, svc *sns.SNS) *sns.PublishInput {
 
 func ConvertQueueURLToARN(inputURL string) string {
     // Awfully bad string replace code to convert a SQS queue URL to an ARN
-    queueARN := strings.Replace(strings.Replace(strings.Replace(inputURL, "https://sqs.", "arn:aws:sqs:", -1), ".amazonaws.com/", ":", -1), "/", ":", -1)
+    //arn:aws-us-gov:sqs:us-gov-west-1:137782974070:infra-event-queue
+    //queueARN := strings.Replace(strings.Replace(strings.Replace(inputURL, "https://sqs.", "arn:aws:sqs:", -1), ".amazonaws.com/", ":", -1), "/", ":", -1)
+    queueARN := strings.Replace(strings.Replace(strings.Replace(inputURL, "https://sqs.", "arn:aws-us-gov:sqs:", -1), ".amazonaws.com/", ":", -1), "/", ":", -1)
     return queueARN
 }
 

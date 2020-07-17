@@ -6,7 +6,7 @@ import (
 )
 func main() {
 	requiredTopic := "infrastructure-event"
-	sess := utility.GetSession()
+	sess := utility.GetSession("tapestry")
 
 	snsSvc := sns.New(sess)
 

@@ -1,4 +1,4 @@
-module goutilities.com/snsutil
+module goutilities.com/awsutil
 
 go 1.13
 

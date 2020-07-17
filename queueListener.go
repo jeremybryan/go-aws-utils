@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"goutilities.com/snsutil/utility"
+	"goutilities.com/awsutil/utility"
 	"time"
 )
 
 func main() {
 	// Initialize the AWS session
-	sess := utility.GetSession()
+	sess := utility.GetSession("tapestry")
 
 	// Create new services for SQS and SNS
 	sqsSvc := sqs.New(sess)
@@ -17,6 +17,7 @@ func main() {
 	requiredQueueName := "infra-event-queue"
 
 	queueURL := utility.RetrieveQueueURL(sqsSvc, requiredQueueName)
+        fmt.Println(queueURL)
 
 	go checkMessages(*sqsSvc, queueURL)
 
