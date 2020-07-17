@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"goutilities.com/awsutil/utility"
 	"time"
+        "os"
 )
 
 func main() {
@@ -14,7 +15,15 @@ func main() {
 	// Create new services for SQS and SNS
 	sqsSvc := sqs.New(sess)
 
-	requiredQueueName := "infra-event-queue"
+        var queue = ""
+        if len(os.Args) > 1 {
+            queue = os.Args[1]
+            fmt.Println("Setting queue::", queue)
+        } else {
+            queue = "infra-event-queue"
+        }
+
+	requiredQueueName := queue
 
 	queueURL := utility.RetrieveQueueURL(sqsSvc, requiredQueueName)
         fmt.Println(queueURL)
