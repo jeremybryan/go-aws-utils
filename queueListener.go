@@ -58,7 +58,7 @@ func main() {
 	_, _ = fmt.Scanln()
 }
 
-func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, postEndpoint string) {
+func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, putEndpoint string) {
 	for ; ; {
 		retrieveMessageRequest := sqs.ReceiveMessageInput{
 			QueueUrl: &queueURL,
@@ -76,8 +76,8 @@ func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, postEndp
 				if getEndpoint != "" {
 					callGetEndpoint(getEndpoint)
 				}
-				if postEndpoint != "" {
-					callPostEndpoint(postEndpoint)
+				if putEndpoint != "" {
+					callPutEndpoint(putEndpoint)
 				}
 
 				processedReceiptHandles[i] = &sqs.DeleteMessageBatchRequestEntry{
