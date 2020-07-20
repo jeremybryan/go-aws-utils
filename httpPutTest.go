@@ -22,7 +22,7 @@ func main ()  {
 			return
 		}
 		defer resp.Body.Close()
-		fmt.Printf("HTTP Post to %s has been completedl Response status: %s", endpoint, resp.Status)
+		fmt.Printf("HTTP Post to %s has been completed.\n Response status: %s\n", *endpoint, resp.Status)
 	} else {
 		fmt.Print("No endpoint has been defined. Exiting")
 	}
