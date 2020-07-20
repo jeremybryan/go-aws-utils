@@ -15,6 +15,13 @@ $ go build setupTopicAndQueue.go
  ```
  Available Parameters
  
+ Parameter Name | Description | Default Value
+ --- | --- | --- | ---
+ profile | sets the AWS Cli profile to be used for accessing AWS SDK | default
+ region | sets the region to operate one | us-east-1
+ topic | defines the SNS topic name where events should be sent | infrastructure-event
+ queue | sets the SQS queue name to be monitoring | infra-event-queue
+  
  ### Set up and run a Queue Listener 
  ##### Build 
   ```
