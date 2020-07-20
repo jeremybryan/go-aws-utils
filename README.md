@@ -31,7 +31,7 @@ $ go build setupTopicAndQueue.go
 
  ##### Running
  ``` 
- ./queueListener -queue=infra-event-queue -profile=foo -region=us-gov-west-1 -endpoint=http://google.com
+ ./queueListener -queue=infra-event-queue -profile=foo -region=us-gov-west-1 -getEndpoint=http://google.com -putEndpoint=http://foo.io
  ```
   
   Parameter Options
@@ -41,7 +41,8 @@ $ go build setupTopicAndQueue.go
 | profile | sets the AWS Cli profile to be used for accessing AWS SDK  | default |
 | region | sets the region to operate one | us-east-1|
 | queue | sets the SQS queue name to be monitoring | none (required input) |
-| endpoint | establishes utl for http call to be made on event received | none (optional input) |
+| getEndpoint | establishes url for http GET call to be made on event received | none (optional input) |
+| putEndpoint | establishes url for http PUT call to be made on event received | none (optional input) |
  
  
  Reference: https://dev.to/jeastham1993/how-to-use-amazon-sqs-and-sns-for-inter-service-communication-part-2-2pna
