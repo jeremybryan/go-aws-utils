@@ -117,8 +117,14 @@ func SendTestMessage(message, arn string, svc *sns.SNS) *sns.PublishInput {
 func ConvertQueueURLToARN(inputURL string, regionType string) string {
     // Awfully bad string replace code to convert a SQS queue URL to an ARN
     //arn:aws-us-gov:sqs:us-gov-west-1:137782974070:infra-event-queue
-    //queueARN := strings.Replace(strings.Replace(strings.Replace(inputURL, "https://sqs.", "arn:aws:sqs:", -1), ".amazonaws.com/", ":", -1), "/", ":", -1)
-    queueARN := strings.Replace(strings.Replace(strings.Replace(inputURL, "https://sqs.", "arn:aws-us-gov:sqs:", -1), ".amazonaws.com/", ":", -1), "/", ":", -1)
+    queueARN := ""
+    if regionType == "gov" {
+        fmt.Println("Retrieving GovCloud formatted QueueARN")
+        queueARN = strings.Replace(strings.Replace(strings.Replace(inputURL, "https://sqs.", "arn:aws-us-gov:sqs:", -1), ".amazonaws.com/", ":", -1), "/", ":", -1)
+    } else {
+        fmt.Println("Retrieving GovCloud formatted QueueARN")
+        queueARN = strings.Replace(strings.Replace(strings.Replace(inputURL, "https://sqs.", "arn:aws:sqs:", -1), ".amazonaws.com/", ":", -1), "/", ":", -1)
+    }
     return queueARN
 }
 

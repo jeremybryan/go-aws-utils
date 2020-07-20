@@ -1,23 +1,39 @@
 package main
 
 import (
+    "flag"
     "github.com/aws/aws-sdk-go/aws"
     "github.com/aws/aws-sdk-go/service/sns"
     "github.com/aws/aws-sdk-go/service/sqs"
     "goutilities.com/awsutil/utility"
+    "strings"
 
     "fmt"
 )
 
 func main() {
-    requiredQueueName := "infra-event-queue"
-    requiredTopic := "infrastructure-event"
+    profilePtr := flag.String("profile", "default", "a string")
+    regionPtr := flag.String("region", "us-east-1", "a string")
+    queuePtr := flag.String("queue", "infra-event-queue", "a string")
+    topicPtr := flag.String("topic", "infrastructure-event", "a string")
+
+    requiredQueueName := *queuePtr
+    requiredTopic := *topicPtr
     queueURL := ""
     topicArn := ""
     protocolName := "sqs"
+    regionType := ""
+
+    //Set the region type (gov or commercial)
+    if strings.Contains(*regionPtr, "gov") {
+        regionType = "gov"
+    }
+
+    fmt.Printf("Proceeding with \n queue=%s\n profile=%s\n topic=%s\n and region=%s.\n",
+        *queuePtr, *profilePtr, *topicPtr, *regionPtr)
 
     //Get a session for interfacing with AWS
-    sess := utility.GetSession("tapestry")
+    sess := utility.GetSession(*profilePtr, *regionPtr)
 
     // Create an SQS and SNS service client.
     snsSvc := sns.New(sess)
@@ -60,7 +76,7 @@ func main() {
     //Now that we know the queue exists...we need to register it to listen to the topic
 
     // No way to retrieve the queue ARN through the SDK, manual string replace to generate the ARN
-    queueARN := utility.ConvertQueueURLToARN(queueURL)
+    queueARN := utility.ConvertQueueURLToARN(queueURL, regionType)
 
     fmt.Println("Topic URN", topicArn)
     fmt.Println("Protocol Name", protocolName)
