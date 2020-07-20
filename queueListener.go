@@ -16,7 +16,7 @@ func main() {
 	profilePtr := flag.String("profile", "default", "a string")
 	regionPtr := flag.String("region", "us-east-1", "a string")
 	getEndpointPtr := flag.String("getEndpoint", "", "a string")
-	postEndpointPtr := flag.String("postEndpoint", "", "a string")
+	putEndpointPtr := flag.String("putEndpoint", "", "a string")
 	flag.Parse()
 
 	if *queuePtr == "" {
@@ -33,10 +33,10 @@ func main() {
 		fmt.Printf("Using HTTP GET endpoint %s as the action endpoint", *getEndpointPtr)
 	}
 
-	if *postEndpointPtr == "" {
+	if *putEndpointPtr == "" {
 		fmt.Println("HTTP POST endpoint has not been set, no action will be taken")
 	} else {
-		fmt.Printf("Using HTTP POST endpoint %s as the action endpoint", *postEndpointPtr)
+		fmt.Printf("Using HTTP POST endpoint %s as the action endpoint", *putEndpointPtr)
 	}
 
 
@@ -53,7 +53,7 @@ func main() {
 		fmt.Printf("The specified queue %s was not found, exiting now\n", requiredQueueName)
 		os.Exit(-1)
 	}
-	go checkMessages(*sqsSvc, queueURL, *getEndpointPtr, *postEndpointPtr)
+	go checkMessages(*sqsSvc, queueURL, *getEndpointPtr, *putEndpointPtr)
 
 	_, _ = fmt.Scanln()
 }
@@ -116,10 +116,16 @@ func callGetEndpoint(endpoint string)  {
 	fmt.Println("Response status:", resp.Status)
 }
 
-func callPostEndpoint(endpoint string)  {
-	resp, err := http.Post(endpoint, "application/json", nil)
+func callPutEndpoint(endpoint string)  {
+	req, err := http.NewRequest("PUT", endpoint, nil)
 	if err != nil {
-		fmt.Errorf("Error completing HTTP POST %s", err.Error())
+		fmt.Errorf("Error creating HTTP PUT request %s", err.Error())
+		return
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		fmt.Errorf("Error completing HTTP PUT %s", err.Error())
+		return
 	}
 	defer resp.Body.Close()
 	fmt.Printf("HTTP Post to %s has been completedl Response status: %s", endpoint, resp.Status)
