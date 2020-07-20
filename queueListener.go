@@ -128,5 +128,5 @@ func callPutEndpoint(endpoint string)  {
 		return
 	}
 	defer resp.Body.Close()
-	fmt.Printf("HTTP Post to %s has been completedl Response status: %s", endpoint, resp.Status)
+	fmt.Printf("HTTP Post to %s has been completed.\n Response status: %s", endpoint, resp.Status)
 }
