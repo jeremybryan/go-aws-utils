@@ -13,15 +13,16 @@ $ go build setupTopicAndQueue.go
  ``` 
  $  ./setupTopicAndQueue -profile=foo -region=us-gov-west-1
  ```
- Available Parameters
+ Parameter Options
  
- Parameter Name | Description | Default Value
- --- | --- | --- | ---
- profile | sets the AWS Cli profile to be used for accessing AWS SDK | default
- region | sets the region to operate one | us-east-1
- topic | defines the SNS topic name where events should be sent | infrastructure-event
- queue | sets the SQS queue name to be monitoring | infra-event-queue
-  
+ | Parameter Name | Description | Default Value |
+|---|---|---|
+| profile | sets the AWS Cli profile to be used for accessing AWS SDK  | default |
+| region | sets the region to operate one | us-east-1|
+| topic | defines the SNS topic name where events should be sent | infrastructure-event |
+| queue | sets the SQS queue name to be monitoring | infra-event-queue |
+
+
  ### Set up and run a Queue Listener 
  ##### Build 
   ```
@@ -33,7 +34,14 @@ $ go build setupTopicAndQueue.go
  ./queueListener -queue=infra-event-queue -profile=foo -region=us-gov-west-1 -endpoint=http://google.com
  ```
   
+  Parameter Options
  
+ | Parameter Name | Description | Default Value |
+|---|---|---|
+| profile | sets the AWS Cli profile to be used for accessing AWS SDK  | default |
+| region | sets the region to operate one | us-east-1|
+| queue | sets the SQS queue name to be monitoring | none (required input) |
+| endpoint | establishes utl for http call to be made on event received | none (optional input) |
  
  
  Reference: https://dev.to/jeastham1993/how-to-use-amazon-sqs-and-sns-for-inter-service-communication-part-2-2pna
