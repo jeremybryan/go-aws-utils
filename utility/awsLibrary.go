@@ -14,7 +14,7 @@ import (
     "os"
 )
 
-func GetSession(profile string) *session.Session {
+func GetSession(profile string, region string) *session.Session {
     // Initialize a session that the SDK will use to load
     // credentials from the shared credentials file. (~/.aws/credentials).
     sess := session.Must(
@@ -28,12 +28,26 @@ func GetSession(profile string) *session.Session {
                 Filename: defaults.SharedCredentialsFilename(),
                 Profile:  profile,
             }),
-            //Region: aws.String(endpoints.UsEast1RegionID),
-            Region: aws.String(endpoints.UsGovWest1RegionID),
+            Region: aws.String(retrieveRegion(region)),
         }),
     )
 
     return sess
+}
+
+func retrieveRegion(region string) string {
+    switch region {
+    case "us-east-1":
+        return endpoints.UsEast1RegionID
+    case "us-east-2":
+        return endpoints.UsEast2RegionID
+    case "us-gov-west-1":
+        return endpoints.UsGovWest1RegionID
+    case "us-gov-east-1":
+        return endpoints.UsGovEast1RegionID
+    default:
+        return endpoints.UsEast1RegionID
+    }
 }
 
 func CreateTopic(topic string, svc *sns.SNS) string {
@@ -100,7 +114,7 @@ func SendTestMessage(message, arn string, svc *sns.SNS) *sns.PublishInput {
     return input
 }
 
-func ConvertQueueURLToARN(inputURL string) string {
+func ConvertQueueURLToARN(inputURL string, regionType string) string {
     // Awfully bad string replace code to convert a SQS queue URL to an ARN
     //arn:aws-us-gov:sqs:us-gov-west-1:137782974070:infra-event-queue
     //queueARN := strings.Replace(strings.Replace(strings.Replace(inputURL, "https://sqs.", "arn:aws:sqs:", -1), ".amazonaws.com/", ":", -1), "/", ":", -1)
@@ -117,11 +131,12 @@ func RetrieveQueueURL(sqsSvc *sqs.SQS, requiredQueueName string) string {
         // If one of the returned queue URL's contains the required name we need
         // then break the loop
         if strings.Contains(*t, requiredQueueName) {
-            fmt.Println("Queue exists.")
+            fmt.Println("Queue has been found, retrieving url.")
             queueURL = *t
             break
         }
     }
+
     return queueURL
 }
 

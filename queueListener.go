@@ -1,39 +1,56 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"goutilities.com/awsutil/utility"
+	"net/http"
 	"time"
         "os"
 )
 
 func main() {
+	//infra-event-queue
+	queuePtr := flag.String("queue", "", "a string")
+	profilePtr := flag.String("profile", "default", "a string")
+	regionPtr := flag.String("region", "us-east-1", "a string")
+	endpointPtr := flag.String("endpoint", "", "a string")
+	flag.Parse()
+
+	if *queuePtr == "" {
+		fmt.Println("Queue name is a required parameter, set it and retry")
+		os.Exit(-1)
+	}
+
+	fmt.Printf("Proceeding with \n queue=%s\n profile=%s\n and region=%s.\n",
+		*queuePtr, *profilePtr, *regionPtr,)
+
+	if *endpointPtr == "" {
+		fmt.Println("HTTP endpoint has not been set, no action will be taken")
+	} else {
+		fmt.Printf("Using HTTP endpoint %s as the action endpoint", *endpointPtr)
+	}
+
 	// Initialize the AWS session
-	sess := utility.GetSession("tapestry")
+	sess := utility.GetSession(*profilePtr, *regionPtr)
 
 	// Create new services for SQS and SNS
 	sqsSvc := sqs.New(sess)
 
-        var queue = ""
-        if len(os.Args) > 1 {
-            queue = os.Args[1]
-            fmt.Println("Setting queue::", queue)
-        } else {
-            queue = "infra-event-queue"
-        }
-
-	requiredQueueName := queue
+	requiredQueueName := *queuePtr
 
 	queueURL := utility.RetrieveQueueURL(sqsSvc, requiredQueueName)
-        fmt.Println(queueURL)
-
-	go checkMessages(*sqsSvc, queueURL)
+	if queueURL == "" {
+		fmt.Printf("The specified queue %s was not found, exiting now\n", requiredQueueName)
+		os.Exit(-1)
+	}
+	go checkMessages(*sqsSvc, queueURL, *endpointPtr)
 
 	_, _ = fmt.Scanln()
 }
 
-func checkMessages(sqsSvc sqs.SQS, queueURL string) {
+func checkMessages(sqsSvc sqs.SQS, queueURL string, endpoint string) {
 	for ; ; {
 		retrieveMessageRequest := sqs.ReceiveMessageInput{
 			QueueUrl: &queueURL,
@@ -47,6 +64,10 @@ func checkMessages(sqsSvc sqs.SQS, queueURL string) {
 
 			for i, mess := range retrieveMessageResponse.Messages {
 				fmt.Println(mess.String())
+
+				if endpoint != "" {
+					callEndpoint(endpoint)
+				}
 
 				processedReceiptHandles[i] = &sqs.DeleteMessageBatchRequestEntry{
 					Id: mess.MessageId,
@@ -73,4 +94,13 @@ func checkMessages(sqsSvc sqs.SQS, queueURL string) {
 		fmt.Printf("%v+\n", time.Now())
 		time.Sleep(time.Minute)
 	}
+}
+
+func callEndpoint(endpoint string)  {
+	resp, err := http.Get(endpoint)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	fmt.Println("Response status:", resp.Status)
 }
