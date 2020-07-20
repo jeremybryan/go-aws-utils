@@ -7,7 +7,6 @@ import (
     "github.com/aws/aws-sdk-go/service/sqs"
     "goutilities.com/awsutil/utility"
     "strings"
-
     "fmt"
 )
 
@@ -16,6 +15,8 @@ func main() {
     regionPtr := flag.String("region", "us-east-1", "a string")
     queuePtr := flag.String("queue", "infra-event-queue", "a string")
     topicPtr := flag.String("topic", "infrastructure-event", "a string")
+
+    flag.Parse()
 
     requiredQueueName := *queuePtr
     requiredTopic := *topicPtr
@@ -29,7 +30,7 @@ func main() {
         regionType = "gov"
     }
 
-    fmt.Printf("Proceeding with \n queue=%s\n profile=%s\n topic=%s\n and region=%s.\n",
+    fmt.Printf("Proceeding with \n queue=%s\n profile=%s\n topic=%s\n region=%s\n",
         *queuePtr, *profilePtr, *topicPtr, *regionPtr)
 
     //Get a session for interfacing with AWS
@@ -96,7 +97,7 @@ func main() {
         }
 
         if createSubRes != nil {
-            fmt.Println(createSubRes.SubscriptionArn)
+            fmt.Println(*createSubRes.SubscriptionArn)
         }
     }
 

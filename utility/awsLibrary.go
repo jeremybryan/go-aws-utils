@@ -71,7 +71,7 @@ func TopicExists(requiredTopic string, svc *sns.SNS) bool {
 
     for _, t := range resultT.Topics {
         if strings.Contains(*t.TopicArn, requiredTopic) {
-            fmt.Println("Topic exists, return ARN")
+            fmt.Println("Topic exists")
             return true
         }
     }
@@ -89,7 +89,7 @@ func RetrieveTopicArn(requiredTopic string, svc *sns.SNS) string {
     var arn = ""
     for _, t := range resultT.Topics {
         if strings.Contains(*t.TopicArn, requiredTopic) {
-            fmt.Println("Topic exists, return ARN")
+            fmt.Println("Returning ARN")
             arn = *t.TopicArn
             break
         }
