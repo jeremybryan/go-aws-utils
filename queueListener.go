@@ -24,19 +24,19 @@ func main() {
 		os.Exit(-1)
 	}
 
-	fmt.Printf("Proceeding with \n queue=%s\n profile=%s\n and region=%s.\n",
-		*queuePtr, *profilePtr, *regionPtr,)
+	fmt.Printf("Proceeding with \n queue=%s\n profile=%s\n region=%s\n",
+		*queuePtr, *profilePtr, *regionPtr)
 
 	if *getEndpointPtr == "" {
 		fmt.Println("HTTP GET endpoint has not been set, no action will be taken")
 	} else {
-		fmt.Printf("Using HTTP GET endpoint %s as the action endpoint", *getEndpointPtr)
+		fmt.Printf("Using HTTP GET endpoint %s as the action endpoint.\n", *getEndpointPtr)
 	}
 
 	if *putEndpointPtr == "" {
 		fmt.Println("HTTP POST endpoint has not been set, no action will be taken")
 	} else {
-		fmt.Printf("Using HTTP POST endpoint %s as the action endpoint", *putEndpointPtr)
+		fmt.Printf("Using HTTP POST endpoint %s as the action endpoint.\n", *putEndpointPtr)
 	}
 
 

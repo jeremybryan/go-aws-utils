@@ -5,11 +5,10 @@ ENV GO111MODULE=on \
     CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64 \
-    QUEUE=infra-event-queue 
-
-    #PROFILE=default \
-    #REGOIN=default \
-    #GETEND=http:\\google.com
+    QUEUE="" \
+    PROFILE="" \
+    REGION="" \
+    GETEND=""
 
 # Move to working directory /build
 WORKDIR /build
@@ -32,9 +31,11 @@ WORKDIR /dist
 RUN cp /build/main .
 
 # Build a small image
-FROM scratch
+#FROM scratch
+FROM alpine:latest
 
 COPY --from=builder /dist/main /
 
 # Command to run
-ENTRYPOINT ["/main", "-queue=${QUEUE}", "-profile=default", "-region=default", "-getEndpoint=http://google.com"]
+#ENTRYPOINT ["/main", "-queue=${QUEUE}", "-profile=${PROFILE}", "-region=${REGION}", "-getEndpoint=${GETEND}"]
+ENTRYPOINT /main -queue=${QUEUE:-""} -profile=${PROFILE:-default} -region=${REGION:-""} -getEndpoint=${GETEND:-""}
