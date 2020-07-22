@@ -4,7 +4,12 @@ FROM golang:alpine AS builder
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
     GOOS=linux \
-    GOARCH=amd64
+    GOARCH=amd64 \
+    QUEUE=infra-event-queue 
+
+    #PROFILE=default \
+    #REGOIN=default \
+    #GETEND=http:\\google.com
 
 # Move to working directory /build
 WORKDIR /build
@@ -32,5 +37,4 @@ FROM scratch
 COPY --from=builder /dist/main /
 
 # Command to run
-ENTRYPOINT ["/main", "-queue=infra-event-queue", "-profile=default", "-region=default", "-getEndpoint=http://google.com"]
-#ENTRYPOINT ["/main"]
+ENTRYPOINT ["/main", "-queue=${QUEUE}", "-profile=default", "-region=default", "-getEndpoint=http://google.com"]
