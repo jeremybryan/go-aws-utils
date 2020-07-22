@@ -2,11 +2,11 @@ package main
 
 import (
 	"github.com/aws/aws-sdk-go/service/sns"
-	"goutilities.com/snsutil/utility"
+	"goutilities.com/awsutil/utility"
 )
 func main() {
 	requiredTopic := "infrastructure-event"
-	sess := utility.GetSession("tapestry")
+	sess := utility.GetSession("default", "us-east-1")
 
 	snsSvc := sns.New(sess)
 
