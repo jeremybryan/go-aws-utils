@@ -86,19 +86,19 @@ func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, putEndpo
 		retrieveMessageResponse, _ := sqsSvc.ReceiveMessage(&retrieveMessageRequest)
 
 		if len(retrieveMessageResponse.Messages) > 0 {
-            count++
-            if count >= threshold {
-            	fmt.Println("Notification threshold has been reached, call endpoints.")
-				if getEndpoint != "" {
-					callGetEndpoint(getEndpoint)
-				}
-				if putEndpoint != "" {
-					callPutEndpoint(putEndpoint)
-				}
-				fmt.Println("Resetting threshold count")
-				count = 0
+                   count++
+                   if count >= threshold {
+            	      fmt.Println("Notification threshold has been reached, call endpoints.")
+		        if getEndpoint != "" {
+			    callGetEndpoint(getEndpoint)
 			}
-			cleanupMessages(sqsSvc, retrieveMessageResponse, queueURL)
+			if putEndpoint != "" {
+			   callPutEndpoint(putEndpoint)
+			}
+			fmt.Println("Resetting threshold count")
+			count = 0
+	           } 
+	  	   cleanupMessages(sqsSvc, retrieveMessageResponse, queueURL)
 		}
 
 		if len(retrieveMessageResponse.Messages) == 0 {
