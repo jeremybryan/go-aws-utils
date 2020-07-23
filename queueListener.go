@@ -116,7 +116,7 @@ func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, putEndpo
 		}
 
 		fmt.Printf("%v+\n", time.Now())
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 30)
 	}
 }
 
