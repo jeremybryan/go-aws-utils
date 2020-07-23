@@ -37,5 +37,4 @@ FROM alpine:latest
 COPY --from=builder /dist/main /
 
 # Command to run
-#ENTRYPOINT ["/main", "-queue=${QUEUE}", "-profile=${PROFILE}", "-region=${REGION}", "-getEndpoint=${GETEND}"]
-ENTRYPOINT /main -queue=${QUEUE:-""} -profile=${PROFILE:-default} -region=${REGION:-""} -getEndpoint=${GETEND:-""}
+ENTRYPOINT /main -queue ${QUEUE:-""} -profile ${PROFILE:-"default"} -region ${REGION:-""} -getEndpoint ${GETEND:-""}

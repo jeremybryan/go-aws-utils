@@ -11,16 +11,20 @@ import (
 )
 
 func main() {
-	//infra-event-queue
 	queuePtr := flag.String("queue", "", "a string")
 	profilePtr := flag.String("profile", "default", "a string")
-	regionPtr := flag.String("region", "us-east-1", "a string")
+	regionPtr := flag.String("region", "", "a string")
 	getEndpointPtr := flag.String("getEndpoint", "", "a string")
 	putEndpointPtr := flag.String("putEndpoint", "", "a string")
 	flag.Parse()
 
 	if *queuePtr == "" {
 		fmt.Println("Queue name is a required parameter, set it and retry")
+		os.Exit(-1)
+	}
+
+	if *regionPtr == "" {
+		fmt.Println("Region is a required parameter, set it and retry")
 		os.Exit(-1)
 	}
 
@@ -39,12 +43,20 @@ func main() {
 		fmt.Printf("Using HTTP POST endpoint %s as the action endpoint.\n", *putEndpointPtr)
 	}
 
-
 	// Initialize the AWS session
 	sess := utility.GetSession(*profilePtr, *regionPtr)
 
+	if sess == nil {
+		fmt.Println("Session was not obtained, exiting.")
+	}
+
 	// Create new services for SQS and SNS
 	sqsSvc := sqs.New(sess)
+
+	if sqsSvc == nil {
+		fmt.Println("SQS Session was not obtained, exiting.")
+		os.Exit(-1)
+	}
 
 	requiredQueueName := *queuePtr
 
@@ -52,13 +64,14 @@ func main() {
 	if queueURL == "" {
 		fmt.Printf("The specified queue %s was not found, exiting now\n", requiredQueueName)
 		os.Exit(-1)
+	} else {
+		fmt.Printf("QueueURL of %s will be used.\n", queueURL)
+		checkMessages(*sqsSvc, queueURL, *getEndpointPtr, *putEndpointPtr)
 	}
-	go checkMessages(*sqsSvc, queueURL, *getEndpointPtr, *putEndpointPtr)
-
-	_, _ = fmt.Scanln()
 }
 
 func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, putEndpoint string) {
+	fmt.Println("Checking for new messages in the queue")
 	for ; ; {
 		retrieveMessageRequest := sqs.ReceiveMessageInput{
 			QueueUrl: &queueURL,
@@ -99,11 +112,11 @@ func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, putEndpo
 		}
 
 		if len(retrieveMessageResponse.Messages) == 0 {
-			fmt.Println(":(  I have no messages")
+			fmt.Println(":(  I have no messages, will check again momentarily")
 		}
 
 		fmt.Printf("%v+\n", time.Now())
-		time.Sleep(time.Minute)
+		time.Sleep(time.Second * 5)
 	}
 }
 

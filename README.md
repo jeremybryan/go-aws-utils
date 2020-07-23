@@ -8,7 +8,6 @@
  ```
 $ go build setupTopicAndQueue.go
 ```
- 
  ##### Running
  ``` 
  $  ./setupTopicAndQueue -profile=foo -region=us-gov-west-1
@@ -22,6 +21,17 @@ $ go build setupTopicAndQueue.go
 | topic | defines the SNS topic name where events should be sent | infrastructure-event |
 | queue | sets the SQS queue name to be monitoring | infra-event-queue |
 
+##### Docker
+Building the docker image:
+```
+docker build . -t listener:latest
+```
+ ##### Running in Docker 
+ The AWS SDK uses the AWS Cli credentials to interface with AWS thus they need to be provided. We 
+ accomplish this by attaching a read only volume to the container.
+```
+ docker run -v $HOME/.aws/credentials:/root/.aws/credentials:ro --env QUEUE=infra-event-queue --env REGION=default listener:latest
+```
 
  ### Set up and run a Queue Listener 
  ##### Build 
