@@ -6,6 +6,9 @@ import (
 	"net/http"
 )
 
+/**
+Simple Http post example
+ */
 func main ()  {
 	endpoint := flag.String("endpoint", "", "a string")
 	flag.Parse()

@@ -8,6 +8,9 @@ import (
 	invoke "github.com/aws/aws-sdk-go/service/lambda"
 )
 
+/**
+Simple lambda integration
+ */
 func main() {
 	//region := os.Getenv("AWS_REGION")
 	region := "us-east-1"

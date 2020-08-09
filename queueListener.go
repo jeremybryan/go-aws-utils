@@ -10,6 +10,10 @@ import (
 	"os"
 )
 
+/**
+This will listen for events from the queue and then, if configured, it will make calls
+to endpoints to propagate the eventing.
+ */
 func main() {
 	queuePtr := flag.String("queue", "", "a string")
 	profilePtr := flag.String("profile", "default", "a string")
