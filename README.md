@@ -21,17 +21,6 @@ $ go build setupTopicAndQueue.go
 | topic | defines the SNS topic name where events should be sent | infrastructure-event |
 | queue | sets the SQS queue name to be monitoring | infra-event-queue |
 
-##### Docker
-Building the docker image:
-```
-docker build . -t listener:latest
-```
- ##### Running in Docker 
- The AWS SDK uses the AWS Cli credentials to interface with AWS thus they need to be provided. We 
- accomplish this by attaching a read only volume to the container.
-```
- docker run -v $HOME/.aws/credentials:/root/.aws/credentials:ro --env QUEUE=infra-event-queue --env REGION=default listener:latest
-```
 
  ### Set up and run a Queue Listener 
  ##### Build 
@@ -43,16 +32,32 @@ docker build . -t listener:latest
  ``` 
  ./queueListener -queue=infra-event-queue -profile=foo -region=us-gov-west-1 -getEndpoint=http://google.com -putEndpoint=http://foo.io
  ```
+
+##### Docker
+Building the docker image:
+```
+docker build . -t listener:latest
+```
+ ##### Running in Docker 
+ The AWS SDK uses the AWS Cli credentials to interface with AWS thus they need to be provided. We 
+ accomplish this by attaching a read only volume to the container.
+```
+ docker run -v $HOME/.aws/credentials:/root/.aws/credentials:ro --env QUEUE=infra-event-queue --env REGION=default listener:latest
+```
   
   Parameter Options
  
  | Parameter Name | Description | Default Value |
 |---|---|---|
 | profile | sets the AWS Cli profile to be used for accessing AWS SDK  | default |
-| region | sets the region to operate one | us-east-1|
+| region | sets the region to operate one | none (required input) |
 | queue | sets the SQS queue name to be monitoring | none (required input) |
 | getEndpoint | establishes url for http GET call to be made on event received | none (optional input) |
 | putEndpoint | establishes url for http PUT call to be made on event received | none (optional input) |
  
- 
+To Do:
+Add threshold 
+Add parameter time interval 
+JSON configuration 
+Interrogate aws credential to obtain region if no region is provided 
  Reference: https://dev.to/jeastham1993/how-to-use-amazon-sqs-and-sns-for-inter-service-communication-part-2-2pna
