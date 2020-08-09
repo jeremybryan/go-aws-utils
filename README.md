@@ -3,6 +3,9 @@
  then listen for events on the queue. The original insipiration for this was to use this as part of a proof-of-concept 
  demonstrating monitoring of infrastructure change events (via CloudTrail and/or CloudWatch).
  
+ ### Installing the AWS SDK
+$ go get github.com/aws/aws-sdk-go
+
  ### Set up a Topic and Queue 
  ##### Build 
  ```
