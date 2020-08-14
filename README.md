@@ -64,3 +64,5 @@ Add parameter time interval
 JSON configuration 
 Interrogate aws credential to obtain region if no region is provided 
  Reference: https://dev.to/jeastham1993/how-to-use-amazon-sqs-and-sns-for-inter-service-communication-part-2-2pna
+
+##### GitHub Actions
