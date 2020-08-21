@@ -10,13 +10,18 @@ import (
 	"os"
 )
 
+/**
+This will listen for events from the queue and then, if configured, it will make calls
+to endpoints to propagate the eventing.
+ */
 func main() {
 	//infra-event-queue
 	queuePtr := flag.String("queue", "", "a string")
 	profilePtr := flag.String("profile", "default", "a string")
-	regionPtr := flag.String("region", "us-east-1", "a string")
+	regionPtr := flag.String("region", "", "a string")
 	getEndpointPtr := flag.String("getEndpoint", "", "a string")
 	putEndpointPtr := flag.String("putEndpoint", "", "a string")
+	thresholdPtr := flag.Int("threshold", 10, "an int")
 	flag.Parse()
 
 	if *queuePtr == "" {
@@ -24,27 +29,40 @@ func main() {
 		os.Exit(-1)
 	}
 
-	fmt.Printf("Proceeding with \n queue=%s\n profile=%s\n and region=%s.\n",
-		*queuePtr, *profilePtr, *regionPtr,)
+	if *regionPtr == "" {
+		fmt.Println("Region is a required parameter, set it and retry")
+		os.Exit(-1)
+	}
+
+	fmt.Printf("Proceeding with \n queue=%s\n profile=%s\n region=%s\n",
+		*queuePtr, *profilePtr, *regionPtr)
 
 	if *getEndpointPtr == "" {
 		fmt.Println("HTTP GET endpoint has not been set, no action will be taken")
 	} else {
-		fmt.Printf("Using HTTP GET endpoint %s as the action endpoint", *getEndpointPtr)
+		fmt.Printf("Using HTTP GET endpoint %s as the action endpoint.\n", *getEndpointPtr)
 	}
 
 	if *putEndpointPtr == "" {
 		fmt.Println("HTTP POST endpoint has not been set, no action will be taken")
 	} else {
-		fmt.Printf("Using HTTP POST endpoint %s as the action endpoint", *putEndpointPtr)
+		fmt.Printf("Using HTTP POST endpoint %s as the action endpoint.\n", *putEndpointPtr)
 	}
-
 
 	// Initialize the AWS session
 	sess := utility.GetSession(*profilePtr, *regionPtr)
 
+	if sess == nil {
+		fmt.Println("Session was not obtained, exiting.")
+	}
+
 	// Create new services for SQS and SNS
 	sqsSvc := sqs.New(sess)
+
+	if sqsSvc == nil {
+		fmt.Println("SQS Session was not obtained, exiting.")
+		os.Exit(-1)
+	}
 
 	requiredQueueName := *queuePtr
 
@@ -53,12 +71,13 @@ func main() {
 		fmt.Printf("The specified queue %s was not found, exiting now\n", requiredQueueName)
 		os.Exit(-1)
 	}
-	go checkMessages(*sqsSvc, queueURL, *getEndpointPtr, *putEndpointPtr)
+	go checkMessages(*sqsSvc, queueURL, *getEndpointPtr, *putEndpointPtr, *thresholdPtr)
 
 	_, _ = fmt.Scanln()
 }
 
-func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, putEndpoint string) {
+func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, putEndpoint string, threshold int) {
+	var count int = 0
 	for ; ; {
 		retrieveMessageRequest := sqs.ReceiveMessageInput{
 			QueueUrl: &queueURL,
@@ -67,35 +86,19 @@ func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, putEndpo
 		retrieveMessageResponse, _ := sqsSvc.ReceiveMessage(&retrieveMessageRequest)
 
 		if len(retrieveMessageResponse.Messages) > 0 {
-
-			processedReceiptHandles := make([]*sqs.DeleteMessageBatchRequestEntry, len(retrieveMessageResponse.Messages))
-
-			for i, mess := range retrieveMessageResponse.Messages {
-				fmt.Println(mess.String())
-
-				if getEndpoint != "" {
-					callGetEndpoint(getEndpoint)
-				}
-				if putEndpoint != "" {
-					callPutEndpoint(putEndpoint)
-				}
-
-				processedReceiptHandles[i] = &sqs.DeleteMessageBatchRequestEntry{
-					Id: mess.MessageId,
-					ReceiptHandle: mess.ReceiptHandle,
-				}
+                   count++
+                   if count >= threshold {
+            	      fmt.Println("Notification threshold has been reached, call endpoints.")
+		        if getEndpoint != "" {
+			    callGetEndpoint(getEndpoint)
 			}
-
-			deleteMessageRequest := sqs.DeleteMessageBatchInput{
-				QueueUrl: &queueURL,
-				Entries: processedReceiptHandles,
+			if putEndpoint != "" {
+			   callPutEndpoint(putEndpoint)
 			}
-
-			_,err := sqsSvc.DeleteMessageBatch(&deleteMessageRequest)
-
-			if err != nil {
-				fmt.Println(err.Error())
-			}
+			fmt.Println("Resetting threshold count")
+			count = 0
+	           } 
+	  	   cleanupMessages(sqsSvc, retrieveMessageResponse, queueURL)
 		}
 
 		if len(retrieveMessageResponse.Messages) == 0 {
@@ -104,6 +107,38 @@ func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, putEndpo
 
 		fmt.Printf("%v+\n", time.Now())
 		time.Sleep(time.Minute)
+	}
+}
+func cleanupMessages(sqsSvc sqs.SQS, retrieveMessageResponse *sqs.ReceiveMessageOutput, queueURL string) {
+	fmt.Println("Cleaning up messages from the queue.")
+	processedReceiptHandles := make([]*sqs.DeleteMessageBatchRequestEntry, len(retrieveMessageResponse.Messages))
+
+	for i, mess := range retrieveMessageResponse.Messages {
+		fmt.Println(mess.String())
+
+		processedReceiptHandles[i] = &sqs.DeleteMessageBatchRequestEntry{
+			Id: mess.MessageId,
+			ReceiptHandle: mess.ReceiptHandle,
+		}
+	}
+
+	deleteMessageRequest := sqs.DeleteMessageBatchInput{
+		QueueUrl: &queueURL,
+		Entries: processedReceiptHandles,
+	}
+
+	_,err := sqsSvc.DeleteMessageBatch(&deleteMessageRequest)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+}
+
+		if len(retrieveMessageResponse.Messages) == 0 {
+			fmt.Println(":(  I have no messages, will check again momentarily")
+		}
+
+		fmt.Printf("%v+\n", time.Now())
+		time.Sleep(time.Second * 30)
 	}
 }
 

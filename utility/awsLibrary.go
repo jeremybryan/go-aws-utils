@@ -36,18 +36,21 @@ func GetSession(profile string, region string) *session.Session {
 }
 
 func retrieveRegion(region string) string {
+    var selRegion string = ""
     switch region {
-    case "us-east-1":
-        return endpoints.UsEast1RegionID
-    case "us-east-2":
-        return endpoints.UsEast2RegionID
-    case "us-gov-west-1":
-        return endpoints.UsGovWest1RegionID
-    case "us-gov-east-1":
-        return endpoints.UsGovEast1RegionID
-    default:
-        return endpoints.UsEast1RegionID
+        case "us-east-1":
+            selRegion = endpoints.UsEast1RegionID
+        case "us-east-2":
+            selRegion = endpoints.UsEast2RegionID
+        case "us-gov-west-1":
+            selRegion = endpoints.UsGovWest1RegionID
+        case "us-gov-east-1":
+            selRegion = endpoints.UsGovEast1RegionID
+        default:
+            selRegion = endpoints.UsEast1RegionID
     }
+    fmt.Printf("%s identified as the region.\n", selRegion)
+    return selRegion
 }
 
 func CreateTopic(topic string, svc *sns.SNS) string {
@@ -122,16 +125,18 @@ func ConvertQueueURLToARN(inputURL string, regionType string) string {
         fmt.Println("Retrieving GovCloud formatted QueueARN")
         queueARN = strings.Replace(strings.Replace(strings.Replace(inputURL, "https://sqs.", "arn:aws-us-gov:sqs:", -1), ".amazonaws.com/", ":", -1), "/", ":", -1)
     } else {
-        fmt.Println("Retrieving GovCloud formatted QueueARN")
+        fmt.Println("Retrieving Commercial Cloud formatted QueueARN")
         queueARN = strings.Replace(strings.Replace(strings.Replace(inputURL, "https://sqs.", "arn:aws:sqs:", -1), ".amazonaws.com/", ":", -1), "/", ":", -1)
     }
     return queueARN
 }
 
 func RetrieveQueueURL(sqsSvc *sqs.SQS, requiredQueueName string) string {
+    fmt.Printf("Checking for %s existence.\n", requiredQueueName)
     listQueuesRequest := sqs.ListQueuesInput{}
     listQueueResults, _ := sqsSvc.ListQueues(&listQueuesRequest)
     queueURL := ""
+    fmt.Printf("Found %d queues\n", len(listQueueResults.QueueUrls))
     for _, t := range listQueueResults.QueueUrls {
         fmt.Println(*t)
         // If one of the returned queue URL's contains the required name we need
@@ -142,7 +147,6 @@ func RetrieveQueueURL(sqsSvc *sqs.SQS, requiredQueueName string) string {
             break
         }
     }
-
     return queueURL
 }
 
