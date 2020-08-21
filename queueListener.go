@@ -6,14 +6,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"goutilities.com/awsutil/utility"
 	"net/http"
-	"time"
 	"os"
+	"time"
 )
 
 /**
 This will listen for events from the queue and then, if configured, it will make calls
 to endpoints to propagate the eventing.
- */
+*/
 func main() {
 	//infra-event-queue
 	queuePtr := flag.String("queue", "", "a string")
@@ -79,38 +79,38 @@ func main() {
 func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, putEndpoint string, threshold int) {
 	var count int = 0
 	for ; ; {
-	   retrieveMessageRequest := sqs.ReceiveMessageInput{
-   	      QueueUrl: &queueURL,
-	   }
+		retrieveMessageRequest := sqs.ReceiveMessageInput{
+			QueueUrl: &queueURL,
+		}
 
-	   retrieveMessageResponse, _ := sqsSvc.ReceiveMessage(&retrieveMessageRequest)
+		retrieveMessageResponse, _ := sqsSvc.ReceiveMessage(&retrieveMessageRequest)
 
-	   if len(retrieveMessageResponse.Messages) > 0 {
-              count++
-        
-              if count >= threshold {
-                 fmt.Println("Notification threshold has been reached, call endpoints.")
-	         if getEndpoint != "" {
-	            callGetEndpoint(getEndpoint)
-	         }
+		if len(retrieveMessageResponse.Messages) > 0 {
+			count++
 
-	        if putEndpoint != "" {
-	           callPutEndpoint(putEndpoint)
-	        }
+			if count >= threshold {
+				fmt.Println("Notification threshold has been reached, call endpoints.")
+				if getEndpoint != "" {
+					callGetEndpoint(getEndpoint)
+				}
 
-	        fmt.Println("Resetting threshold count")
-	        count = 0
-	      } 
-	      cleanupMessages(sqsSvc, retrieveMessageResponse, queueURL)
-	   }
+				if putEndpoint != "" {
+					callPutEndpoint(putEndpoint)
+				}
 
-	   if len(retrieveMessageResponse.Messages) == 0 {
-	      fmt.Println(":(  I have no messages")
-   	   }
+				fmt.Println("Resetting threshold count")
+				count = 0
+			}
+			cleanupMessages(sqsSvc, retrieveMessageResponse, queueURL)
+		}
 
-	   fmt.Printf("%v+\n", time.Now())
-	   time.Sleep(time.Minute)
-     }
+		if len(retrieveMessageResponse.Messages) == 0 {
+			fmt.Println(":(  I have no messages")
+		}
+
+		fmt.Printf("%v+\n", time.Now())
+		time.Sleep(time.Minute)
+	}
 }
 
 func cleanupMessages(sqsSvc sqs.SQS, retrieveMessageResponse *sqs.ReceiveMessageOutput, queueURL string) {
@@ -121,32 +121,32 @@ func cleanupMessages(sqsSvc sqs.SQS, retrieveMessageResponse *sqs.ReceiveMessage
 		fmt.Println(mess.String())
 
 		processedReceiptHandles[i] = &sqs.DeleteMessageBatchRequestEntry{
-			Id: mess.MessageId,
+			Id:            mess.MessageId,
 			ReceiptHandle: mess.ReceiptHandle,
 		}
 	}
 
 	deleteMessageRequest := sqs.DeleteMessageBatchInput{
 		QueueUrl: &queueURL,
-		Entries: processedReceiptHandles,
+		Entries:  processedReceiptHandles,
 	}
 
-	_,err := sqsSvc.DeleteMessageBatch(&deleteMessageRequest)
+	_, err := sqsSvc.DeleteMessageBatch(&deleteMessageRequest)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 }
 
-		if len(retrieveMessageResponse.Messages) == 0 {
-			fmt.Println(":(  I have no messages, will check again momentarily")
-		}
-
-		fmt.Printf("%v+\n", time.Now())
-		time.Sleep(time.Second * 30)
-	}
+if len(retrieveMessageResponse.Messages) == 0 {
+fmt.Println(":(  I have no messages, will check again momentarily")
 }
 
-func callGetEndpoint(endpoint string)  {
+fmt.Printf("%v+\n", time.Now())
+time.Sleep(time.Second * 30)
+}
+}
+
+func callGetEndpoint(endpoint string) {
 	resp, err := http.Get(endpoint)
 	if err != nil {
 		panic(err)
@@ -155,7 +155,7 @@ func callGetEndpoint(endpoint string)  {
 	fmt.Println("Response status:", resp.Status)
 }
 
-func callPutEndpoint(endpoint string)  {
+func callPutEndpoint(endpoint string) {
 	req, err := http.NewRequest("PUT", endpoint, nil)
 	if err != nil {
 		fmt.Errorf("Error creating HTTP PUT request %s", err.Error())
