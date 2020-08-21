@@ -79,36 +79,40 @@ func main() {
 func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, putEndpoint string, threshold int) {
 	var count int = 0
 	for ; ; {
-		retrieveMessageRequest := sqs.ReceiveMessageInput{
-			QueueUrl: &queueURL,
-		}
+	   retrieveMessageRequest := sqs.ReceiveMessageInput{
+   	      QueueUrl: &queueURL,
+	   }
 
-		retrieveMessageResponse, _ := sqsSvc.ReceiveMessage(&retrieveMessageRequest)
+	   retrieveMessageResponse, _ := sqsSvc.ReceiveMessage(&retrieveMessageRequest)
 
-		if len(retrieveMessageResponse.Messages) > 0 {
-                   count++
-                   if count >= threshold {
-            	      fmt.Println("Notification threshold has been reached, call endpoints.")
-		        if getEndpoint != "" {
-			    callGetEndpoint(getEndpoint)
-			}
-			if putEndpoint != "" {
-			   callPutEndpoint(putEndpoint)
-			}
-			fmt.Println("Resetting threshold count")
-			count = 0
-	           } 
-	  	   cleanupMessages(sqsSvc, retrieveMessageResponse, queueURL)
-		}
+	   if len(retrieveMessageResponse.Messages) > 0 {
+              count++
+        
+              if count >= threshold {
+                 fmt.Println("Notification threshold has been reached, call endpoints.")
+	         if getEndpoint != "" {
+	            callGetEndpoint(getEndpoint)
+	         }
 
-		if len(retrieveMessageResponse.Messages) == 0 {
-			fmt.Println(":(  I have no messages")
-		}
+	        if putEndpoint != "" {
+	           callPutEndpoint(putEndpoint)
+	        }
 
-		fmt.Printf("%v+\n", time.Now())
-		time.Sleep(time.Minute)
-	}
+	        fmt.Println("Resetting threshold count")
+	        count = 0
+	      } 
+	      cleanupMessages(sqsSvc, retrieveMessageResponse, queueURL)
+	   }
+
+	   if len(retrieveMessageResponse.Messages) == 0 {
+	      fmt.Println(":(  I have no messages")
+   	   }
+
+	   fmt.Printf("%v+\n", time.Now())
+	   time.Sleep(time.Minute)
+     }
 }
+
 func cleanupMessages(sqsSvc sqs.SQS, retrieveMessageResponse *sqs.ReceiveMessageOutput, queueURL string) {
 	fmt.Println("Cleaning up messages from the queue.")
 	processedReceiptHandles := make([]*sqs.DeleteMessageBatchRequestEntry, len(retrieveMessageResponse.Messages))
