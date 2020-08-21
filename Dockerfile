@@ -8,6 +8,7 @@ ENV GO111MODULE=on \
     QUEUE="" \
     PROFILE="" \
     REGION="" \
+    THRESHOLD="" \
     GETEND=""
 
 # Move to working directory /build
@@ -37,4 +38,4 @@ FROM alpine:latest
 COPY --from=builder /dist/main /
 
 # Command to run
-ENTRYPOINT /main -queue ${QUEUE:-""} -profile ${PROFILE:-"default"} -region ${REGION:-""} -getEndpoint ${GETEND:-""}
+ENTRYPOINT /main -queue ${QUEUE:-""} -profile ${PROFILE:-"default"} -threshold ${THRESHOLD:-10} -region ${REGION:-""} -getEndpoint ${GETEND:-""}
