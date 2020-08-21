@@ -10,6 +10,11 @@ import (
     "fmt"
 )
 
+/**
+This guy is an all in one approach...it sets up the topic and then sets up the queue,
+registers the topic and queue. This would/could be run prior to kicking off the queue
+listener IF the topic and queue were not already established.
+ */
 func main() {
     profilePtr := flag.String("profile", "default", "a string")
     regionPtr := flag.String("region", "us-east-1", "a string")

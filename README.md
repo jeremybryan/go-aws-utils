@@ -68,3 +68,13 @@ Interrogate aws credential to obtain region if no region is provided
  Reference: https://dev.to/jeastham1993/how-to-use-amazon-sqs-and-sns-for-inter-service-communication-part-2-2pna
 
 ##### GitHub Actions
+
+##### Subdirectories 
+The following directories in contain other, not directly related, projects/applications.
+These were written either to gain an understanding or to test some aspect of the queue listener
+app.
+
+- httpTesters
+- lambdaClient
+- testMessage
+- topicAndQueueSetup
