@@ -137,15 +137,6 @@ func cleanupMessages(sqsSvc sqs.SQS, retrieveMessageResponse *sqs.ReceiveMessage
 	}
 }
 
-if len(retrieveMessageResponse.Messages) == 0 {
-fmt.Println(":(  I have no messages, will check again momentarily")
-}
-
-fmt.Printf("%v+\n", time.Now())
-time.Sleep(time.Second * 30)
-}
-}
-
 func callGetEndpoint(endpoint string) {
 	resp, err := http.Get(endpoint)
 	if err != nil {
