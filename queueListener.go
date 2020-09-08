@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/spf13/viper"
 	"goutilities.com/awsutil/utility"
 	"net/http"
 	"os"
@@ -15,6 +16,14 @@ This will listen for events from the queue and then, if configured, it will make
 to endpoints to propagate the eventing.
 */
 func main() {
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	viper.SetConfigType("json")
+	if err := viper.ReadInConfig(); err != nil { // Handle errors reading the config file
+		fmt.Printf("Fatal error config file, #{err}")
+		os.Exit(1)
+	}
+
 	//infra-event-queue
 	queuePtr := flag.String("queue", "", "a string")
 	profilePtr := flag.String("profile", "default", "a string")
@@ -135,15 +144,6 @@ func cleanupMessages(sqsSvc sqs.SQS, retrieveMessageResponse *sqs.ReceiveMessage
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-}
-
-if len(retrieveMessageResponse.Messages) == 0 {
-fmt.Println(":(  I have no messages, will check again momentarily")
-}
-
-fmt.Printf("%v+\n", time.Now())
-time.Sleep(time.Second * 30)
-}
 }
 
 func callGetEndpoint(endpoint string) {
