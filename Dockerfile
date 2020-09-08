@@ -36,7 +36,7 @@ RUN cp /build/config.json .
 FROM alpine:latest
 
 COPY --from=builder /dist/main /
-COPY --from=build /dist/config.json .
+COPY --from=builder /dist/config.json .
 
 # Command to run
 ENTRYPOINT /main

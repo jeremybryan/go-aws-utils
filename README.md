@@ -47,7 +47,7 @@ docker build . -t listener:latest
  The AWS SDK uses the AWS Cli credentials to interface with AWS thus they need to be provided. We 
  accomplish this by attaching a read only volume to the container.
 ```
- docker run -v $HOME/.aws/credentials:/root/.aws/credentials:ro --env QUEUE=infra-event-queue --env REGION=default listener:latest
+ docker run -v $HOME/.aws/credentials:/root/.aws/credentials:ro --name listener listener:latest
 ```
   
   Parameter Options

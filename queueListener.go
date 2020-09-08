@@ -63,7 +63,7 @@ func main() {
 		fmt.Printf("The specified queue %s was not found, exiting now\n", requiredQueueName)
 		os.Exit(-1)
 	}
-	go checkMessages(*sqsSvc, queueURL, getEndpoint, putEndpoint, threshold)
+	checkMessages(*sqsSvc, queueURL, getEndpoint, putEndpoint, threshold)
 
 	_, _ = fmt.Scanln()
 }

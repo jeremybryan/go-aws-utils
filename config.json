@@ -1,7 +1,7 @@
 {
-  "queue": "",
-  "profile": "",
-  "region": "",
+  "queue": "infra-event-queue",
+  "profile": "tapestry",
+  "region": "us-gov-west-1",
   "getEndpoint": "",
   "putEndpoint": "",
   "threshold": "10"
