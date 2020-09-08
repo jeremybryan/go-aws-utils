@@ -29,12 +29,14 @@ WORKDIR /dist
 
 # Copy binary from build to main folder
 RUN cp /build/main .
+RUN cp /build/config.json .
 
 # Build a small image
 #FROM scratch
 FROM alpine:latest
 
 COPY --from=builder /dist/main /
+COPY --from=build /dist/config.json .
 
 # Command to run
-ENTRYPOINT /main -queue ${QUEUE:-""} -profile ${PROFILE:-"default"} -region ${REGION:-""} -getEndpoint ${GETEND:-""}
+ENTRYPOINT /main

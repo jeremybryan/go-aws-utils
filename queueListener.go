@@ -1,7 +1,7 @@
 package main
 
 import (
-	"flag"
+	c "goutilities.com/awsutil/config"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/spf13/viper"
@@ -19,47 +19,30 @@ func main() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
 	viper.SetConfigType("json")
+
+	var configuration c.ListenerConfig
+
 	if err := viper.ReadInConfig(); err != nil { // Handle errors reading the config file
 		fmt.Printf("Fatal error config file, #{err}")
 		os.Exit(1)
 	}
 
-	//infra-event-queue
-	queuePtr := flag.String("queue", "", "a string")
-	profilePtr := flag.String("profile", "default", "a string")
-	regionPtr := flag.String("region", "", "a string")
-	getEndpointPtr := flag.String("getEndpoint", "", "a string")
-	putEndpointPtr := flag.String("putEndpoint", "", "a string")
-	thresholdPtr := flag.Int("threshold", 10, "an int")
-	flag.Parse()
-
-	if *queuePtr == "" {
-		fmt.Println("Queue name is a required parameter, set it and retry")
-		os.Exit(-1)
+	err := viper.Unmarshal(&configuration)
+	if err != nil {
+		fmt.Printf("Unable to decode into struct, %v", err)
 	}
 
-	if *regionPtr == "" {
-		fmt.Println("Region is a required parameter, set it and retry")
-		os.Exit(-1)
-	}
+	validationConfiguration(configuration)
 
-	fmt.Printf("Proceeding with \n queue=%s\n profile=%s\n region=%s\n",
-		*queuePtr, *profilePtr, *regionPtr)
-
-	if *getEndpointPtr == "" {
-		fmt.Println("HTTP GET endpoint has not been set, no action will be taken")
-	} else {
-		fmt.Printf("Using HTTP GET endpoint %s as the action endpoint.\n", *getEndpointPtr)
-	}
-
-	if *putEndpointPtr == "" {
-		fmt.Println("HTTP POST endpoint has not been set, no action will be taken")
-	} else {
-		fmt.Printf("Using HTTP POST endpoint %s as the action endpoint.\n", *putEndpointPtr)
-	}
+	queue := configuration.Queue
+	profile := configuration.Profile
+	region := configuration.Region
+	getEndpoint := configuration.GetEndpoint
+	putEndpoint := configuration.PutEndpoint
+	threshold := configuration.Threshold
 
 	// Initialize the AWS session
-	sess := utility.GetSession(*profilePtr, *regionPtr)
+	sess := utility.GetSession(profile, region)
 
 	if sess == nil {
 		fmt.Println("Session was not obtained, exiting.")
@@ -73,20 +56,47 @@ func main() {
 		os.Exit(-1)
 	}
 
-	requiredQueueName := *queuePtr
+	requiredQueueName := queue
 
 	queueURL := utility.RetrieveQueueURL(sqsSvc, requiredQueueName)
 	if queueURL == "" {
 		fmt.Printf("The specified queue %s was not found, exiting now\n", requiredQueueName)
 		os.Exit(-1)
 	}
-	go checkMessages(*sqsSvc, queueURL, *getEndpointPtr, *putEndpointPtr, *thresholdPtr)
+	go checkMessages(*sqsSvc, queueURL, getEndpoint, putEndpoint, threshold)
 
 	_, _ = fmt.Scanln()
 }
 
+func validationConfiguration(config c.ListenerConfig ) {
+	if config.Queue == "" {
+		fmt.Println("Queue name is a required parameter, set it and retry")
+		os.Exit(-1)
+	}
+
+	if config.Region == "" {
+		fmt.Println("Region is a required parameter, set it and retry")
+		os.Exit(-1)
+	}
+
+	fmt.Printf("Proceeding with \n queue=%s\n profile=%s\n region=%s\n",
+		config.Queue, config.Profile, config.Region)
+
+	if config.GetEndpoint == "" {
+		fmt.Println("HTTP GET endpoint has not been set, no action will be taken")
+	} else {
+		fmt.Printf("Using HTTP GET endpoint %s as the action endpoint.\n", config.GetEndpoint)
+	}
+
+	if config.PutEndpoint == "" {
+		fmt.Println("HTTP POST endpoint has not been set, no action will be taken")
+	} else {
+		fmt.Printf("Using HTTP POST endpoint %s as the action endpoint.\n", config.PutEndpoint)
+	}
+}
+
 func checkMessages(sqsSvc sqs.SQS, queueURL string, getEndpoint string, putEndpoint string, threshold int) {
-	var count int = 0
+	var count = 0
 	for ; ; {
 		retrieveMessageRequest := sqs.ReceiveMessageInput{
 			QueueUrl: &queueURL,
