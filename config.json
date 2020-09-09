@@ -1,0 +1,8 @@
+{
+  "queue": "infra-event-queue",
+  "profile": "",
+  "region": "",
+  "getEndpoint": "",
+  "putEndpoint": "",
+  "threshold": "10"
+}
