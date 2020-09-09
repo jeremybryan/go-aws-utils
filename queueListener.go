@@ -22,6 +22,9 @@ func main() {
 
 	var configuration c.ListenerConfig
 
+        //fmt.Printf("Waiting ....")
+        //time.Sleep(time.Minute * 2)
+ 
 	if err := viper.ReadInConfig(); err != nil { // Handle errors reading the config file
 		fmt.Printf("Fatal error config file, #{err}")
 		os.Exit(1)
